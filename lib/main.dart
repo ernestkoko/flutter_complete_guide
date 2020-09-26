@@ -20,19 +20,28 @@ class MyApp extends StatelessWidget {
         accentColor: Colors.amber,
         fontFamily: 'Quicksand',
         //theme for the rest of the app
-        textTheme: ThemeData.light().textTheme.merge(TextTheme(
-            headline6: TextStyle(
-                fontFamily: 'OpenSans',
-                fontWeight: FontWeight.bold,
-                fontSize: 18.0))),
+        textTheme: ThemeData.light().textTheme.merge(
+              TextTheme(
+                headline6: TextStyle(
+                    fontFamily: 'OpenSans',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18.0),
+                  button: TextStyle(color: Colors.white)
+              ),
+
+            ),
         //app bar theme
         appBarTheme: AppBarTheme(
-            textTheme: ThemeData.light().textTheme.merge(TextTheme(
-                    headline6: TextStyle(
-                  fontFamily: 'OpenSans',
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                )))),
+          textTheme: ThemeData.light().textTheme.merge(
+                TextTheme(
+                  headline6: TextStyle(
+                    fontFamily: 'OpenSans',
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+        ),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: MyHomePage(),
@@ -63,9 +72,11 @@ class _MyHomePageState extends State<MyHomePage> {
     //   date: DateTime.now(),
     // )
   ];
+
   List<Transaction> get _recentTransaction {
-    return _userTransactions.where((transaction){
-      return transaction.date.isAfter(DateTime.now().subtract(Duration(days: 7)));
+    return _userTransactions.where((transaction) {
+      return transaction.date
+          .isAfter(DateTime.now().subtract(Duration(days: 7)));
     }).toList();
   }
 
@@ -114,7 +125,9 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             Container(
               width: double.infinity,
-              child: Chart(recentTransactions: _recentTransaction,),
+              child: Chart(
+                recentTransactions: _recentTransaction,
+              ),
             ),
             TransactionList(transactions: _userTransactions)
           ],
