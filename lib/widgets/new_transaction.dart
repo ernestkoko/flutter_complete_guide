@@ -16,13 +16,16 @@ class _NewTransactionState extends State<NewTransaction> {
   DateTime _selectedDate;
 
   void _submitData() {
+    if(_amountController.text.isEmpty){
+      return;
+    }
     final enteredTitle = _titleController.text;
     final enteredAmount = double.tryParse(_amountController.text);
-    if (enteredAmount <= 0 || enteredTitle.isEmpty) {
+    if (enteredAmount <= 0 || enteredTitle.isEmpty || _selectedDate == null) {
       return;
     }
 
-    widget.addTx(enteredTitle, enteredAmount);
+    widget.addTx(enteredTitle, enteredAmount, _selectedDate);
 
     //close the widget if it succeeds
     Navigator.of(context).pop();
@@ -77,7 +80,7 @@ class _NewTransactionState extends State<NewTransaction> {
                     textColor: Theme.of(context).primaryColor,
                     onPressed: _presentDatePicker,
                     child: Text(
-                      
+
                       'Choose Date',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),

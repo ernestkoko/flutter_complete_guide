@@ -18,17 +18,16 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.purple,
         accentColor: Colors.amber,
+        // errorColor: Colors.red,
         fontFamily: 'Quicksand',
         //theme for the rest of the app
         textTheme: ThemeData.light().textTheme.merge(
               TextTheme(
-                headline6: TextStyle(
-                    fontFamily: 'OpenSans',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.0),
-                  button: TextStyle(color: Colors.white)
-              ),
-
+                  headline6: TextStyle(
+                      fontFamily: 'OpenSans',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18.0),
+                  button: TextStyle(color: Colors.white)),
             ),
         //app bar theme
         appBarTheme: AppBarTheme(
@@ -80,14 +79,20 @@ class _MyHomePageState extends State<MyHomePage> {
     }).toList();
   }
 
-  void _addNewTransaction(String title, double amount) {
+  void _addNewTransaction(String title, double amount, DateTime chosenDate) {
     final newTex = Transaction(
         title: title,
         amount: amount,
-        date: DateTime.now(),
+        date: chosenDate,
         id: DateTime.now().toString());
     setState(() {
       _userTransactions.add(newTex);
+    });
+  }
+
+  void _deleteTransaction(String id) {
+    setState(() {
+      _userTransactions.removeWhere((element) => element.id == id);
     });
   }
 
@@ -106,30 +111,40 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Personal Expenses",
-          style: TextStyle(fontFamily: 'OpenSans'),
-        ),
-        actions: [
-          IconButton(
-              icon: Icon(Icons.add),
-              onPressed: () => _startAddNewTransaction(context))
-        ],
+    final appBar = AppBar(
+      title: Text(
+        "Personal Expenses",
+        style: TextStyle(fontFamily: 'OpenSans'),
       ),
+      actions: [
+        IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () => _startAddNewTransaction(context))
+      ],
+    );
+    return Scaffold(
+      appBar: appBar,
       body: SingleChildScrollView(
         child: Column(
           // mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Container(
+              height: (MediaQuery.of(context).size.height -
+                      appBar.preferredSize.height -MediaQuery.of(context).padding.top) *
+                  0.3,
               width: double.infinity,
               child: Chart(
                 recentTransactions: _recentTransaction,
               ),
             ),
-            TransactionList(transactions: _userTransactions)
+            Container(
+                height: (MediaQuery.of(context).size.height -
+                        appBar.preferredSize.height- MediaQuery.of(context).padding.top) *
+                    0.7,
+                child: TransactionList(
+                    transactions: _userTransactions,
+                    deleteTx: _deleteTransaction))
           ],
         ),
       ),
