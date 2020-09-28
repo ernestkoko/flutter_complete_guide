@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_complete_guide/widgets/chart.dart';
 import 'package:flutter_complete_guide/widgets/new_transaction.dart';
 import 'package:flutter_complete_guide/widgets/transaction_list.dart';
@@ -8,9 +7,9 @@ import './models/transaction.dart';
 
 void main() {
   //call this before setting orientation
-  WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations(
-      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+  // WidgetsFlutterBinding.ensureInitialized();
+  // SystemChrome.setPreferredOrientations(
+  //     [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
   runApp(MyApp());
 }
 
@@ -60,6 +59,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String titleInput;
+  bool _showChart = false;
 
   String amountInput;
   final List<Transaction> _userTransactions = [
@@ -134,24 +134,41 @@ class _MyHomePageState extends State<MyHomePage> {
           // mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Container(
-              height: (MediaQuery.of(context).size.height -
-                      appBar.preferredSize.height -
-                      MediaQuery.of(context).padding.top) *
-                  0.3,
-              width: double.infinity,
-              child: Chart(
-                recentTransactions: _recentTransaction,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Show chart'),
+                Switch(
+                  value: _showChart,
+                  onChanged: (val) {
+                    setState(() {
+                      _showChart = val;
+                    });
+                  },
+                ),
+              ],
             ),
-            Container(
-                height: (MediaQuery.of(context).size.height -
-                        appBar.preferredSize.height -
-                        MediaQuery.of(context).padding.top) *
-                    0.7,
-                child: TransactionList(
-                    transactions: _userTransactions,
-                    deleteTx: _deleteTransaction))
+            //if show chart is true
+            _showChart
+                ? Container(
+                    height: (MediaQuery.of(context).size.height -
+                            appBar.preferredSize.height -
+                            MediaQuery.of(context).padding.top) *
+                        0.3,
+                    width: double.infinity,
+                    child: Chart(
+                      recentTransactions: _recentTransaction,
+                    ),
+                  )
+            //else show this
+                : Container(
+                    height: (MediaQuery.of(context).size.height -
+                            appBar.preferredSize.height -
+                            MediaQuery.of(context).padding.top) *
+                        0.7,
+                    child: TransactionList(
+                        transactions: _userTransactions,
+                        deleteTx: _deleteTransaction))
           ],
         ),
       ),
