@@ -114,8 +114,14 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
+    //get te orientation of the device
+    final isLandScape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+
     final appBar = AppBar(
       title: Text(
         "Personal Expenses",
@@ -127,6 +133,14 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: () => _startAddNewTransaction(context))
       ],
     );
+    final txListWidget= Container(
+        height: (MediaQuery.of(context).size.height -
+            appBar.preferredSize.height -
+            MediaQuery.of(context).padding.top) *
+            0.7,
+        child: TransactionList(
+            transactions: _userTransactions,
+            deleteTx: _deleteTransaction));
     return Scaffold(
       appBar: appBar,
       body: SingleChildScrollView(
@@ -134,7 +148,8 @@ class _MyHomePageState extends State<MyHomePage> {
           // mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Row(
+            //if it is landscape the Row renders, else nothing
+            if(isLandScape) Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text('Show chart'),
@@ -148,27 +163,32 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ],
             ),
+            if(!isLandScape)
+              Container(
+                height: (MediaQuery.of(context).size.height -
+                    appBar.preferredSize.height -
+                    MediaQuery.of(context).padding.top) *
+                    0.3,
+                width: double.infinity,
+                child: Chart(
+                  recentTransactions: _recentTransaction,
+                ),
+              ),
+            if(!isLandScape) txListWidget,
             //if show chart is true
-            _showChart
+           if(isLandScape) _showChart
                 ? Container(
                     height: (MediaQuery.of(context).size.height -
                             appBar.preferredSize.height -
                             MediaQuery.of(context).padding.top) *
-                        0.3,
+                        0.7,
                     width: double.infinity,
                     child: Chart(
                       recentTransactions: _recentTransaction,
                     ),
                   )
-            //else show this
-                : Container(
-                    height: (MediaQuery.of(context).size.height -
-                            appBar.preferredSize.height -
-                            MediaQuery.of(context).padding.top) *
-                        0.7,
-                    child: TransactionList(
-                        transactions: _userTransactions,
-                        deleteTx: _deleteTransaction))
+                //else show this
+                : txListWidget
           ],
         ),
       ),
