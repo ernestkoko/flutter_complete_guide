@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_complete_guide/widgets/chart.dart';
 import 'package:flutter_complete_guide/widgets/new_transaction.dart';
@@ -57,11 +59,35 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+//WidgetsBindingObserver class helps us monitor the app life cycle
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   String titleInput;
   bool _showChart = false;
 
   String amountInput;
+
+  @override
+  void initState() {
+    //add observer
+    WidgetsBinding.instance.addObserver(this);
+    super.initState();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print(state);
+
+    super.didChangeAppLifecycleState(state);
+  }
+
+  //called when the app dies
+  @override
+  void dispose() {
+    //remove the observer
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
   final List<Transaction> _userTransactions = [
     // Transaction(
     //   id: 't1',
@@ -114,13 +140,62 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  List<Widget> _buildLandscapeContent(
+      MediaQueryData mediaQuery, AppBar appBar, Widget txListWidget) {
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text('Show chart'),
+          Switch.adaptive(
+            activeColor: Theme.of(context).accentColor,
+            value: _showChart,
+            onChanged: (val) {
+              setState(() {
+                _showChart = val;
+              });
+            },
+          ),
+        ],
+      ),
+      _showChart
+          ? Container(
+              height: (mediaQuery.size.height -
+                      appBar.preferredSize.height -
+                      mediaQuery.padding.top) *
+                  0.7,
+              width: double.infinity,
+              child: Chart(
+                recentTransactions: _recentTransaction,
+              ),
+            )
+          //else show this
+          : txListWidget
+    ];
+  }
+
+  List<Widget> _buildPortraitContent(
+      MediaQueryData mediaQuery, AppBar appBar, Widget txListWidget) {
+    return [
+      Container(
+        height: (MediaQuery.of(context).size.height -
+                appBar.preferredSize.height -
+                mediaQuery.padding.top) *
+            0.3,
+        width: double.infinity,
+        child: Chart(
+          recentTransactions: _recentTransaction,
+        ),
+      ),
+      txListWidget
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
     //get te orientation of the device
-    final isLandScape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
-
+    final isLandScape = mediaQuery.orientation == Orientation.landscape;
 
     final appBar = AppBar(
       title: Text(
@@ -133,14 +208,13 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: () => _startAddNewTransaction(context))
       ],
     );
-    final txListWidget= Container(
+    final txListWidget = Container(
         height: (MediaQuery.of(context).size.height -
-            appBar.preferredSize.height -
-            MediaQuery.of(context).padding.top) *
+                appBar.preferredSize.height -
+                mediaQuery.padding.top) *
             0.7,
         child: TransactionList(
-            transactions: _userTransactions,
-            deleteTx: _deleteTransaction));
+            transactions: _userTransactions, deleteTx: _deleteTransaction));
     return Scaffold(
       appBar: appBar,
       body: SingleChildScrollView(
@@ -149,57 +223,24 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             //if it is landscape the Row renders, else nothing
-            if(isLandScape) Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Show chart'),
-                Switch(
-                  value: _showChart,
-                  onChanged: (val) {
-                    setState(() {
-                      _showChart = val;
-                    });
-                  },
-                ),
-              ],
-            ),
-            if(!isLandScape)
-              Container(
-                height: (MediaQuery.of(context).size.height -
-                    appBar.preferredSize.height -
-                    MediaQuery.of(context).padding.top) *
-                    0.3,
-                width: double.infinity,
-                child: Chart(
-                  recentTransactions: _recentTransaction,
-                ),
-              ),
-            if(!isLandScape) txListWidget,
-            //if show chart is true
-           if(isLandScape) _showChart
-                ? Container(
-                    height: (MediaQuery.of(context).size.height -
-                            appBar.preferredSize.height -
-                            MediaQuery.of(context).padding.top) *
-                        0.7,
-                    width: double.infinity,
-                    child: Chart(
-                      recentTransactions: _recentTransaction,
-                    ),
-                  )
-                //else show this
-                : txListWidget
+            if (isLandScape)
+              ..._buildLandscapeContent(mediaQuery, appBar, txListWidget),
+            //spread operator... it flattens the list
+            if (!isLandScape)
+              ..._buildPortraitContent(mediaQuery, appBar, txListWidget),
           ],
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _startAddNewTransaction(context),
-        elevation: 4.0,
-        child: IconButton(
-          icon: Icon(Icons.add),
-        ),
-      ),
+      floatingActionButton: Platform.isIOS
+          ? Container()
+          : FloatingActionButton(
+              onPressed: () => _startAddNewTransaction(context),
+              elevation: 4.0,
+              child: IconButton(
+                icon: Icon(Icons.add),
+              ),
+            ),
     );
   }
 }
